@@ -1,22 +1,16 @@
 ---
 - hosts: all
   tasks:
-  - name: update wget using dnf
+  - name: update using dnf
     become: true 
     ansible.builtin.dnf:
-      name: wget
+      name: "*"
       state: latest
     when: ansible_pkg_mgr == 'dnf'
 
-  - name: update wget using yum
-    ansible.builtin.yum:
-      name: wget
-      state: latest
-    when: ansible_pkg_mgr == 'yum'
-
-  - name: update wget using apt
+  - name: update using apt
     ansible.builtin.apt:
-      name: wget
+      name: "*"
       state: latest
     when: ansible_pkg_mgr == 'apt'
 ...

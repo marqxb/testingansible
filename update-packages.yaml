@@ -1,26 +1,21 @@
 ---
-- name: Update and upgrade apt packages
-
+- hosts: all
   tasks:
-    - name: Update packages with apt
-      when: ansible_pkg_mgr == 'apt'
-      ansible.builtin.apt:
-       update_cache: true
+  - name: update wget using dnf
+    ansible.builtin.dnf:
+      name: wget
+      state: latest
+    when: ansible_pkg_mgr == 'dnf'
 
-    - name: Update packages with yum
-      when: ansible_pkg_mgr == 'yum'
-      ansible.builtin.yum:
-        name: '*'
-        state: latest # noqa: package-latest
+  - name: update wget using yum
+    ansible.builtin.yum:
+      name: wget
+      state: latest
+    when: ansible_pkg_mgr == 'yum'
 
-    - name: Upgrade packages with apt
-      when: ansible_pkg_mgr == 'apt'
-      ansible.builtin.apt:
-        upgrade: dist
-
-    - name: Upgrade packages with yum
-      when: ansible_pkg_mgr == 'yum'
-      ansible.builtin.yum:
-        name: '*'
-        state: latest # noqa: package-latest
-        exclude: kernel*
+  - name: update wget using apt
+    ansible.builtin.apt:
+      name: wget
+      state: latest
+    when: ansible_pkg_mgr == 'apt'
+...

@@ -1,8 +1,8 @@
 ---
-- name: Install qemu-guest-agent package
-  hosts: all
-  become: true
-  become_method: ansible.builtin.sudo
+#- name: Install qemu-guest-agent package
+#  hosts: all
+# become: true
+#  become_method: ansible.builtin.sudo
 
   tasks:
     name: Intall Qemu and deps

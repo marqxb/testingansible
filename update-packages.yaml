@@ -2,6 +2,7 @@
 - hosts: all
   tasks:
   - name: update wget using dnf
+    become: yes
     ansible.builtin.dnf:
       name: wget
       state: latest

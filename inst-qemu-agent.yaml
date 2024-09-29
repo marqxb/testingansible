@@ -7,5 +7,6 @@
   tasks:
     - name: Install qemu-guest-agent
       ansible.builtin.apt:
+        name: pyhton3-apt
         name: qemu-guest-agent
         state: present

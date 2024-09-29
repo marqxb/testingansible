@@ -5,11 +5,8 @@
   become_method: ansible.builtin.sudo
 
   tasks:
-    - name: Install python3-apt
-      ansible.builtin.apt:
-      name: python3-apt
-      state: present
-    - name: Install qemu-guest-agent
-      ansible.builtin.apt:
-        name: qemu-guest-agent
+    name: Intall Qemu and deps
+      apt:
+      - python3-apt
+      - Install qemu-guest-agent
         state: present

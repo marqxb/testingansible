@@ -10,6 +10,8 @@
 
   - name: update using apt
     ansible.builtin.apt:
+    update_cache: true
+                cache_valid_time: 3600
       name: "*"
       state: latest
     when: ansible_pkg_mgr == 'apt'

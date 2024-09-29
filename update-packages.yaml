@@ -4,6 +4,8 @@
   - name: update using dnf
     become: true 
     ansible.builtin.dnf:
+    update_cache: true
+                cache_valid_time: 3600
       name: "*"
       state: latest
     when: ansible_pkg_mgr == 'dnf'

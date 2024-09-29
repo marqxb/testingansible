@@ -1,0 +1,22 @@
+---
+- hosts: all
+  tasks:
+  - name: ensure the wheel group exists
+    group:
+      name: wheel
+      state: present
+
+  - name: ensure john.doe is a member of the wheel group
+    user:
+      name: marq
+      groups: wheel
+      append: yes
+
+  - name: copy sudoers file to /etc/sudoers
+    copy:
+      src: /usr/local/ansible/files/sudoers
+      dest: /etc/sudoers
+      owner: root
+      group: root
+      mode: "0440"
+...

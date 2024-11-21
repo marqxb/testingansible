@@ -3,6 +3,7 @@
   tasks:
   - name: update using dnf
     become: true 
+    become_method: sudo
     ansible.builtin.dnf:
       update_cache: true
       name: "*"

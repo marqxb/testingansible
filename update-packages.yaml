@@ -12,7 +12,7 @@
   - name: update using apt
     become: true
      become_user: root
-      become_method: sudo
+     become_method: sudo
     ansible.builtin.apt:
       update_cache: true
       name: "*"

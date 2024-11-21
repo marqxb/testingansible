@@ -11,6 +11,7 @@
 
   - name: update using apt
     become: true
+    sudo: true
     ansible.builtin.apt:
       update_cache: true
       name: "*"

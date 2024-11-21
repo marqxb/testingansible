@@ -10,9 +10,8 @@
     when: ansible_pkg_mgr == 'dnf'
 
   - name: update using apt
-    become: true
-     become_user: root
-     become_method: sudo
+    become: true 
+    become_method: sudo
     ansible.builtin.apt:
       update_cache: true
       name: "*"

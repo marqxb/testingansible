@@ -10,6 +10,7 @@
     when: ansible_pkg_mgr == 'dnf'
 
   - name: update using apt
+    become: true
     ansible.builtin.apt:
       update_cache: true
       name: "*"

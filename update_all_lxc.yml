@@ -1,0 +1,48 @@
+---
+- name: Update all running Proxmox LXC containers
+  hosts: localhost
+  gather_facts: no
+
+  tasks:
+    - name: Get information about all LXC containers
+      proxmox_kvm_info:
+        api_host: "{{ pve_host }}"
+        api_user: "{{ pve_user }}"
+        # Tunnistautuminen toimii joko salasanalla TAI API-tokenilla
+        # riippuen siitä, kumpi on määritelty Semaphoren Environmentissä.
+        api_password: "{{ pve_password | default(omit) }}"
+        api_token_id: "{{ pve_token_id | default(omit) }}"
+        api_token_secret: "{{ pve_token_secret | default(omit) }}"
+        node: "{{ pve_host }}" # Oletus, että Proxmox-isäntä on sama kuin noden nimi
+        type: lxc
+      register: lxc_containers
+
+    - name: Loop through running containers and update them
+      loop: "{{ lxc_containers.proxmox_kvms }}"
+      loop_control:
+        loop_var: container
+      when: container.status == 'running'
+      block:
+        - name: "Updating container {{ container.vmid }} ({{ container.name }})"
+          ansible.builtin.shell: |
+            pct exec {{ container.vmid }} -- /bin/bash -c '
+              if [ -x "/usr/bin/apt" ]; then
+                echo "==> Found APT, running update..."
+                apt update && apt upgrade -y
+              elif [ -x "/usr/bin/dnf" ]; then
+                echo "==> Found DNF, running update..."
+                dnf -y update
+              elif [ -x "/usr/bin/pacman" ]; then
+                echo "==> Found Pacman, running update..."
+                pacman -Syu --noconfirm
+              else
+                echo "Unsupported package manager in this container."
+                exit 1
+              fi
+            '
+          register: update_result
+          changed_when: "'is already the newest version' not in update_result.stdout"
+          
+        - name: "Show update result for {{ container.vmid }}"
+          ansible.builtin.debug:
+            var: update_result.stdout_lines

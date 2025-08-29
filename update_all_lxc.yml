@@ -5,7 +5,7 @@
 
   tasks:
     - name: Get information about all LXC containers
-        community.general.proxmox_kvm_info:
+      community.general.proxmox_kvm_info:
         api_host: "{{ pve_host }}"
         api_user: "{{ pve_user }}"
         # Tunnistautuminen toimii joko salasanalla TAI API-tokenilla

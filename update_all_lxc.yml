@@ -18,7 +18,7 @@
       register: lxc_containers
 
     - name: Loop through running containers and update them
-      loop: "{{ lxc_containers.proxmox_kvms }}"
+      loop: "{{ lxc_containers.proxmox_lxc_containers }}"
       loop_control:
         loop_var: container
       when: container.status == 'running'

@@ -2,11 +2,16 @@
 # Play 1: Discover running LXC containers via Proxmox API
 # This play runs on the Ansible LXC itself and builds a dynamic inventory
 # of containers that need to be updated.
-- name: Discover running LXC containers (v2 - with debug)
+- name: Discover running LXC containers (v3 - with forced install)
   hosts: localhost
   gather_facts: false
 
   pre_tasks:
+    - name: WORKAROUND - Forcibly install required ansible collection
+      ansible.builtin.command:
+        cmd: ansible-galaxy collection install community.general:8.5.0 --force
+      changed_when: false
+
     - name: DEBUG - List all files in the repository checkout
       ansible.builtin.shell:
         cmd: |

@@ -2,7 +2,7 @@
 # Play 1: Discover running LXC containers via Proxmox API
 # This play runs on the Ansible LXC itself and builds a dynamic inventory
 # of containers that need to be updated.
-- name: Discover running LXC containers from Proxmox API
+- name: Discover running LXC containers (v2 - with debug)
   hosts: localhost
   gather_facts: false
 

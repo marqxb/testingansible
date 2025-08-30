@@ -1,0 +1,91 @@
+---
+# Play 1: Discover running LXC containers via Proxmox API
+# This play runs on the Ansible LXC itself and builds a dynamic inventory
+# of containers that need to be updated.
+- name: Discover running LXC containers from Proxmox API
+  hosts: localhost
+  gather_facts: false
+  vars:
+    # --- Proxmox API Connection Details ---
+    # It's best practice to load these from environment variables or a vault
+    # rather than storing them in the playbook directly.
+    pve_host: "{{ lookup('env', 'PVE_API_HOST') }}"
+    pve_user: "{{ lookup('env', 'PVE_API_USER') }}"
+    pve_token_id: "{{ lookup('env', 'PVE_TOKEN_ID') }}"
+    pve_token_secret: "{{ lookup('env', 'PVE_TOKEN_SECRET') }}"
+
+  tasks:
+    - name: Ensure Proxmox connection details are provided
+      ansible.builtin.assert:
+        that:
+          - pve_host | length > 0
+          - pve_user | length > 0
+          - pve_token_id | length > 0
+          - pve_token_secret | length > 0
+        fail_msg: "Please set PVE_API_HOST, PVE_API_USER, PVE_TOKEN_ID, and PVE_TOKEN_SECRET environment variables."
+
+    - name: Get information about all LXC containers from Proxmox
+      community.general.proxmox_lxc_info:
+        api_host: "{{ pve_host }}"
+        api_user: "{{ pve_user }}"
+        api_token_id: "{{ pve_token_id }}"
+        api_token_secret: "{{ pve_token_secret }}"
+        validate_certs: false
+      register: lxc_info
+
+    - name: Create a dynamic inventory of running LXC containers with IP addresses
+      ansible.builtin.add_host:
+        name: "{{ item.ip }}"
+        groups: lxc_hosts_to_update
+        ansible_lxc_name: "{{ item.name }}"
+      loop: "{{ lxc_info.proxmox_lxc_containers }}"
+      when: item.status == 'running' and item.ip is defined and item.ip != 'N/A'
+      changed_when: false
+
+# Play 2: Connect to each discovered LXC via SSH and perform updates
+# This play targets the dynamic 'lxc_hosts_to_update' group created in Play 1.
+- name: Update discovered LXC containers
+  hosts: lxc_hosts_to_update
+  gather_facts: false
+  become: yes # Assume we need root privileges to manage packages
+  vars:
+    # Specify the user to SSH into the target containers with.
+    # This user's public key must be in the authorized_keys on the target.
+    ansible_user: root
+
+  tasks:
+    - name: "Wait for SSH to be available on {{ ansible_lxc_name }} ({{ inventory_hostname }})"
+      ansible.builtin.wait_for_connection:
+        timeout: 60
+
+    - name: Discover the package manager on the target container
+      ansible.builtin.package_facts:
+        manager: auto
+
+    - name: "Update APT cache for {{ ansible_lxc_name }}"
+      ansible.builtin.apt:
+        update_cache: yes
+        cache_valid_time: 3600
+      when: ansible_pkg_mgr == 'apt'
+      changed_when: false
+
+    - name: "Upgrade APT packages on {{ ansible_lxc_name }}"
+      ansible.builtin.apt:
+        upgrade: dist
+      when: ansible_pkg_mgr == 'apt'
+
+    - name: "Upgrade DNF/YUM packages on {{ ansible_lxc_name }}"
+      ansible.builtin.yum:
+        name: '*'
+        state: latest
+      when: ansible_pkg_mgr in ['dnf', 'yum']
+
+    - name: "Upgrade Pacman packages on {{ ansible_lxc_name }}"
+      ansible.builtin.pacman:
+        update_cache: yes
+        upgrade: yes
+      when: ansible_pkg_mgr == 'pacman'
+
+    - name: "Debug - Update complete for {{ ansible_lxc_name }}"
+      ansible.builtin.debug:
+        msg: "Package update process finished for {{ ansible_lxc_name }} ({{ inventory_hostname }})."

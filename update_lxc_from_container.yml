@@ -46,7 +46,7 @@
         fail_msg: "Please set PVE_API_HOST, PVE_API_USER, PVE_TOKEN_ID, and PVE_TOKEN_SECRET environment variables."
 
     - name: Get information about all LXC containers from Proxmox
-      community.general.proxmox_lxc_info:
+      community.proxmox.proxmox_lxc_info:
         api_host: "{{ pve_host }}"
         api_user: "{{ pve_user }}"
         api_token_id: "{{ pve_token_id }}"

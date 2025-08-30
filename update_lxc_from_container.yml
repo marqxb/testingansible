@@ -5,6 +5,22 @@
 - name: Discover running LXC containers from Proxmox API
   hosts: localhost
   gather_facts: false
+
+  pre_tasks:
+    - name: DEBUG - List all files in the repository checkout
+      ansible.builtin.shell:
+        cmd: |
+          echo "--- Current Directory ---"
+          pwd
+          echo "--- File Listing (Recursive) ---"
+          ls -lR
+      register: file_listing
+      changed_when: false
+
+    - name: DEBUG - Display the file listing
+      ansible.builtin.debug:
+        var: file_listing.stdout_lines
+
   vars:
     # --- Proxmox API Connection Details ---
     # It's best practice to load these from environment variables or a vault
@@ -89,3 +105,4 @@
     - name: "Debug - Update complete for {{ ansible_lxc_name }}"
       ansible.builtin.debug:
         msg: "Package update process finished for {{ ansible_lxc_name }} ({{ inventory_hostname }})."
+
